@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Eksplorasi Garis by Mathnology</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    /* Mencegah zoom dan scroll yang tidak disengaja di HP */
+    html, body { 
+      height: 100%; 
+      width: 100%; 
+      overflow: hidden; 
+      overscroll-behavior-y: none;
+    }
+
+    .app-root {
+      font-family: 'Fredoka', sans-serif;
+      height: 100%;
+      width: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mission-card {
+      backdrop-filter: blur(12px);
+      animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes confettiBurst {
+      0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+      100% { transform: translateY(-100px) rotate(720deg) scale(0); opacity: 0; }
+    }
+
+    .confetti-particle {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 2px;
+      animation: confettiBurst 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+
+    .toast-msg {
+      animation: slideUp 0.3s ease, fadeOut 0.3s ease 2.5s forwards;
+    }
+    @keyframes fadeOut {
+      to { opacity: 0; transform: translateY(-10px); }
+    }
+
+    .btn-primary {
+      transition: all 0.2s ease;
+    }
+    .btn-primary:active {
+      transform: scale(0.96);
+      filter: brightness(1.1);
+    }
+
+    .mode-btn {
+      transition: all 0.2s ease;
+      background: rgba(30,41,59,0.8);
+      border: 1px solid rgba(148,163,184,0.15);
+    }
+    .mode-btn:active {
+      transform: scale(0.95);
+      background: rgba(56,189,248,0.2);
+      border-color: rgba(56,189,248,0.5);
+    }
+
+    /* Toggle Kesulitan */
+    .diff-btn {
+      transition: all 0.2s ease;
+      background: rgba(30,41,59,0.6);
+      color: #94a3b8;
+      border: 1px solid rgba(148,163,184,0.2);
+    }
+    .diff-btn.active-easy {
+      background: rgba(52,211,153,0.15);
+      color: #34d399;
+      border-color: #34d399;
+    }
+    .diff-btn.active-hard {
+      background: rgba(239,68,68,0.15);
+      color: #f87171;
+      border-color: #f87171;
+    }
+
+    canvas { 
+      touch-action: none; 
+      cursor: grab; 
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+    canvas:active { cursor: grabbing; }
+  </style>
+ </head>
+ <body class="bg-slate-900 h-full w-full">
+  <div class="app-root" id="appRoot">
+   <div id="toastContainer" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 items-center pointer-events-none w-[90%] max-w-sm"></div>
+   
+   <div id="screenTitle" class="flex-1 w-full flex flex-col relative" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);">
+    <div class="absolute inset-0 overflow-hidden pointer-events-none">
+     <svg class="w-full h-full opacity-10" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+       <pattern id="heroGrid" width="30" height="30" patternunits="userSpaceOnUse">
+        <circle cx="15" cy="15" r="1.5" fill="#38bdf8" />
+       </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#heroGrid)" />
+     </svg>
+    </div>
+    
+    <div class="relative z-10 text-center px-4 pt-8 pb-4">
+     <h1 class="text-2xl sm:text-3xl font-bold text-white mb-0.5 tracking-tight">Eksplorasi Garis</h1>
+     <div class="text-[10px] sm:text-xs font-bold mb-4 tracking-widest uppercase" style="color: #38bdf8;">By Mathnology</div>
+     
+     <div class="flex justify-center gap-2 max-w-[280px] mx-auto">
+       <button id="btnEasy" onclick="setDifficulty('mudah')" class="diff-btn active-easy flex-1 py-2 rounded-xl text-sm font-bold flex justify-center items-center gap-1.5 shadow-sm">
+         <i data-lucide="smile" class="w-4 h-4"></i> Mudah
+       </button>
+       <button id="btnHard" onclick="setDifficulty('sulit')" class="diff-btn flex-1 py-2 rounded-xl text-sm font-bold flex justify-center items-center gap-1.5 shadow-sm">
+         <i data-lucide="flame" class="w-4 h-4"></i> Sulit
+       </button>
+     </div>
+    </div>
+
+    <div class="relative z-10 flex-1 px-4 pb-8 flex flex-col items-center justify-center">
+      <div class="grid grid-cols-2 gap-3 w-full max-w-[340px]">
+        <button onclick="startMode('sejajar')" class="mode-btn flex flex-col items-center p-3 rounded-2xl text-center">
+          <div class="p-2.5 rounded-xl mb-2" style="background: rgba(56,189,248,0.1);">
+            <i data-lucide="equal" class="w-7 h-7 text-sky-400"></i>
+          </div>
+          <h3 class="text-sm font-bold text-white leading-tight">Sejajar</h3>
+          <p class="text-[10px] text-slate-400 mt-0.5 leading-tight">Kemiringan sama</p>
+        </button>
+
+        <button onclick="startMode('berimpit')" class="mode-btn flex flex-col items-center p-3 rounded-2xl text-center">
+          <div class="p-2.5 rounded-xl mb-2" style="background: rgba(244,114,182,0.1);">
+            <i data-lucide="blend" class="w-7 h-7 text-pink-400"></i>
+          </div>
+          <h3 class="text-sm font-bold text-white leading-tight">Berimpit</h3>
+          <p class="text-[10px] text-slate-400 mt-0.5 leading-tight">Garis bertumpuk</p>
+        </button>
+
+        <button onclick="startMode('berpotongan')" class="mode-btn flex flex-col items-center p-3 rounded-2xl text-center">
+          <div class="p-2.5 rounded-xl mb-2" style="background: rgba(52,211,153,0.1);">
+            <i data-lucide="x" class="w-7 h-7 text-emerald-400"></i>
+          </div>
+          <h3 class="text-sm font-bold text-white leading-tight">Berpotongan</h3>
+          <p class="text-[10px] text-slate-400 mt-0.5 leading-tight">Saling menyilang</p>
+        </button>
+
+        <button onclick="startMode('tegaklurus')" class="mode-btn flex flex-col items-center p-3 rounded-2xl text-center">
+          <div class="p-2.5 rounded-xl mb-2" style="background: rgba(167,139,250,0.1);">
+            <i data-lucide="plus" class="w-7 h-7 text-violet-400"></i>
+          </div>
+          <h3 class="text-sm font-bold text-white leading-tight">Tegak Lurus</h3>
+          <p class="text-[10px] text-slate-400 mt-0.5 leading-tight">Potong sudut 90°</p>
+        </button>
+      </div>
+    </div>
+   </div>
+   
+   <div id="screenGame" class="flex-1 w-full hidden flex-col" style="background: #0f172a;">
+    <header class="flex items-center gap-2 px-3 py-2.5 shrink-0" style="background: rgba(15,23,42,0.95); border-bottom: 1px solid rgba(56,189,248,0.15);">
+     <button onclick="showScreen('title')" class="p-1.5 rounded-lg hover:bg-white/10 active:bg-white/20 transition" style="color:#94a3b8;"> <i data-lucide="arrow-left" style="width:20px;height:20px;"></i> </button> 
+     <span id="levelLabel" class="text-xs sm:text-sm font-bold uppercase tracking-wider" style="color:#38bdf8;">Mode Sejajar</span>
+     <div class="ml-auto flex items-center gap-1.5">
+      <span id="diffBadge" class="text-[10px] font-bold px-1.5 py-0.5 rounded-md" style="background: rgba(52,211,153,0.2); color: #34d399;">MUDAH</span>
+      <button onclick="startMode(currentModeId)" class="p-1.5 rounded-lg hover:bg-white/10 active:bg-white/20 transition" style="color:#94a3b8;" title="Acak Posisi"> <i data-lucide="dices" style="width:18px;height:18px;"></i> </button> 
+      <button onclick="toggleHint()" id="hintBtn" class="p-1.5 rounded-lg hover:bg-white/10 active:bg-white/20 transition" style="color:#fbbf24;" title="Petunjuk"> <i data-lucide="lightbulb" style="width:18px;height:18px;"></i> </button>
+     </div>
+    </header>
+    
+    <div class="px-3 py-2 shrink-0">
+     <div class="mission-card rounded-xl p-2.5 shadow-sm" style="background: rgba(30,41,59,0.85); border: 1px solid rgba(56,189,248,0.2);">
+      <p id="missionText" class="text-xs sm:text-sm text-white font-medium leading-relaxed"></p>
+     </div>
+    </div>
+    
+    <div class="flex-1 flex items-center justify-center px-3 pb-3 min-h-0 w-full">
+     <div id="canvasWrapper" class="relative w-full h-full max-w-[450px] max-h-[450px] flex items-center justify-center">
+      <canvas id="gameCanvas" class="w-full rounded-2xl shadow-lg" style="background: #1e293b; border: 1px solid rgba(56,189,248,0.15);"></canvas>
+      <div id="confettiLayer" class="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl"></div>
+     </div>
+    </div>
+    
+    <div id="successOverlay" class="hidden absolute inset-0 z-40 flex items-center justify-center p-4" style="background: rgba(15,23,42,0.9);">
+     <div class="text-center px-5 py-6 mission-card w-full max-w-[300px] rounded-2xl shadow-2xl" style="background: #1e293b; border: 1px solid rgba(52,211,153,0.3);">
+      <div class="mb-5">
+       <div class="mx-auto mb-3 w-14 h-14 rounded-full flex items-center justify-center" style="background: rgba(52,211,153,0.2);">
+         <i data-lucide="check-circle-2" class="w-8 h-8 text-emerald-400"></i>
+       </div>
+       <p class="text-xl font-bold text-white mb-1.5">Kerja Bagus! 🎉</p>
+       <p id="successSub" class="text-xs leading-relaxed" style="color:#94a3b8;">Tantangan diselesaikan dengan sempurna.</p>
+      </div>
+      <div class="flex flex-col gap-2.5 justify-center">
+       <button onclick="startMode(currentModeId)" class="btn-primary w-full py-2.5 rounded-xl font-bold text-sm text-white" style="background: linear-gradient(135deg, #38bdf8, #818cf8);"> Acak Tantangan Baru </button>
+       <button onclick="showScreen('title')" class="btn-primary w-full py-2.5 rounded-xl font-semibold text-xs" style="background: rgba(148,163,184,0.15); color: #e2e8f0;"> Kembali ke Menu </button> 
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+
+<script>
+// ===================== CONFIG & STATE =====================
+const gameColors = { accent: '#38bdf8', surface: '#1e293b', text: '#e2e8f0', bg: '#0f172a' };
+const domCache = {
+  successOverlay: document.getElementById('successOverlay'),
+  toastContainer: document.getElementById('toastContainer'),
+  confettiLayer: document.getElementById('confettiLayer'),
+  levelLabel: document.getElementById('levelLabel'),
+  missionText: document.getElementById('missionText'),
+  successSub: document.getElementById('successSub'),
+  diffBadge: document.getElementById('diffBadge'),
+  btnEasy: document.getElementById('btnEasy'),
+  btnHard: document.getElementById('btnHard'),
+  canvasWrapper: document.getElementById('canvasWrapper')
+};
+
+let difficulty = 'mudah';
+let GRID = 6;
+let currentModeId = null;
+let activeRefLine = [];
+let activePoints = [];
+let draggedPointIndex = null;
+let isDrawingFramePending = false;
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d', { alpha: false });
+
+// ===================== MATH HELPERS =====================
+const sqDist = (p1, p2) => (p1[0]-p2[0])**2 + (p1[1]-p2[1])**2;
+const cross = (v, w) => v.x * w.y - v.y * w.x;
+const dot = (v, w) => v.x * w.x + v.y * w.y;
+
+function getVectors(refPoints, userPoints) {
+  const A = refPoints[0], B = refPoints[1];
+  const C = userPoints[0].pos, D = userPoints[1].pos;
+  return {
+    A, B, C, D,
+    AB: { x: B[0]-A[0], y: B[1]-A[1] },
+    CD: { x: D[0]-C[0], y: D[1]-C[1] },
+    AC: { x: C[0]-A[0], y: C[1]-A[1] }
+  };
+}
+
+function ccw(A,B,C) { return (C[1]-A[1])*(B[0]-A[0]) > (B[1]-A[1])*(C[0]-A[0]); }
+function segmentsIntersect(A, B, C, D) {
+  if ((A[0]===C[0]&&A[1]===C[1])||(A[0]===D[0]&&A[1]===D[1])||(B[0]===C[0]&&B[1]===C[1])||(B[0]===D[0]&&B[1]===D[1])) {
+    return true; 
+  }
+  return ccw(A,C,D)!==ccw(B,C,D) && ccw(A,B,C)!==ccw(A,B,D);
+}
+
+// ===================== MODES LOGIC =====================
+const modes = {
+  sejajar: {
+    title: 'Sejajar',
+    mission: '🎯 Geser titik agar garis biru <b>SEJAJAR</b>! <br><span class="text-[10px] sm:text-xs text-sky-300">Tips: Hitung kemiringan garis merah.</span>',
+    hint: 'Garis sejajar memiliki kemiringan (gradien) yang sama persis dan tidak akan pernah bersentuhan.',
+    validate: (refLine, pts) => {
+      const v = getVectors(refLine, pts);
+      if (v.CD.x === 0 && v.CD.y === 0) return false;
+      return cross(v.AB, v.CD) === 0 && cross(v.AB, v.AC) !== 0;
+    }
+  },
+  berimpit: {
+    title: 'Berimpit',
+    mission: '🎯 Geser titik agar garis biru <b>BERIMPIT</b> (menumpuk persis) di garis merah!',
+    hint: 'Pindahkan kedua titik biru agar menindih tepat di atas jalur garis merah.',
+    validate: (refLine, pts) => {
+      const v = getVectors(refLine, pts);
+      if (v.CD.x === 0 && v.CD.y === 0) return false;
+      if (cross(v.AB, v.CD) !== 0 || cross(v.AB, v.AC) !== 0) return false;
+      
+      const lenAB2 = dot(v.AB, v.AB);
+      const tC = dot(v.AC, v.AB) / lenAB2;
+      const tD = dot({x:v.D[0]-v.A[0], y:v.D[1]-v.A[1]}, v.AB) / lenAB2;
+      
+      const minT = Math.min(tC, tD);
+      const maxT = Math.max(tC, tD);
+      return Math.max(0, minT) <= Math.min(1, maxT);
+    }
+  },
+  berpotongan: {
+    title: 'Berpotongan',
+    mission: '🎯 Geser titik agar garis biru <b>MENYILANG</b> garis merah! (Bukan 90°)',
+    hint: 'Tabrakan garis biru ke garis merah, tapi pastikan sudutnya tidak tegak lurus.',
+    validate: (refLine, pts) => {
+      const v = getVectors(refLine, pts);
+      if (v.CD.x === 0 && v.CD.y === 0) return false;
+      const intersects = segmentsIntersect(v.A, v.B, v.C, v.D);
+      const isPerpendicular = dot(v.AB, v.CD) === 0;
+      return intersects && !isPerpendicular; 
+    }
+  },
+  tegaklurus: {
+    title: 'Tegak Lurus',
+    mission: '🎯 Bentuk silangan <b>TEGAK LURUS (90°)</b>!<br><span class="text-[10px] sm:text-xs text-sky-300">Tips: Merah naik X geser Y, Biru turun Y geser X.</span>',
+    hint: 'Garis tegak lurus membentuk sudut siku-siku seperti tanda tambah (+) sempurna.',
+    validate: (refLine, pts) => {
+      const v = getVectors(refLine, pts);
+      if (v.CD.x === 0 && v.CD.y === 0) return false;
+      const intersects = segmentsIntersect(v.A, v.B, v.C, v.D);
+      const isPerpendicular = dot(v.AB, v.CD) === 0;
+      return intersects && isPerpendicular;
+    }
+  }
+};
+
+// ===================== PUZZLE GENERATOR =====================
+function setDifficulty(lvl) {
+  difficulty = lvl;
+  GRID = lvl === 'mudah' ? 6 : 8;
+  
+  domCache.btnEasy.classList.toggle('active-easy', lvl === 'mudah');
+  domCache.btnHard.classList.toggle('active-hard', lvl === 'sulit');
+  
+  if (lvl === 'mudah') {
+    domCache.diffBadge.textContent = 'MUDAH';
+    domCache.diffBadge.style.background = 'rgba(52,211,153,0.2)';
+    domCache.diffBadge.style.color = '#34d399';
+  } else {
+    domCache.diffBadge.textContent = 'SULIT';
+    domCache.diffBadge.style.background = 'rgba(239,68,68,0.2)';
+    domCache.diffBadge.style.color = '#f87171';
+  }
+}
+
+function generatePuzzle(modeId) {
+  const modeData = modes[modeId];
+  let validRef = false;
+  
+  while(!validRef) {
+    let A = [Math.floor(Math.random()*GRID), Math.floor(Math.random()*GRID)];
+    let B = [Math.floor(Math.random()*GRID), Math.floor(Math.random()*GRID)];
+    let dx = Math.abs(A[0]-B[0]);
+    let dy = Math.abs(A[1]-B[1]);
+    
+    if (difficulty === 'mudah') {
+      if (dx*dx + dy*dy >= 4 && (dx === 0 || dy === 0 || dx === dy)) {
+        activeRefLine = [A, B];
+        validRef = true;
+      }
+    } else {
+      if (dx*dx + dy*dy >= 9 && dx > 0 && dy > 0 && dx !== dy) {
+        activeRefLine = [A, B];
+        validRef = true;
+      }
+    }
+  }
+  
+  let isSolved = true;
+  let p1, p2;
+  
+  while(isSolved) {
+    p1 = [Math.floor(Math.random()*GRID), Math.floor(Math.random()*GRID)];
+    p2 = [Math.floor(Math.random()*GRID), Math.floor(Math.random()*GRID)];
+    if (p1[0] !== p2[0] || p1[1] !== p2[1]) {
+      isSolved = modeData.validate(activeRefLine, [{pos: p1}, {pos: p2}]);
+    }
+  }
+
+  activePoints = [
+    { pos: p1, color: '#38bdf8', label: 'P' },
+    { pos: p2, color: '#38bdf8', label: 'Q' }
+  ];
+}
+
+// ===================== RENDERING =====================
+function resizeCanvas() {
+  const wrapper = domCache.canvasWrapper;
+  // Memastikan kanvas berbentuk kotak sempurna (1:1) menyesuaikan batas kontainer
+  const rect = wrapper.getBoundingClientRect();
+  const size = Math.floor(Math.min(rect.width, rect.height)); 
+  
+  canvas.style.width = size + 'px';
+  canvas.style.height = size + 'px';
+  canvas.width = size * window.devicePixelRatio;
+  canvas.height = size * window.devicePixelRatio;
+  ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
+  
+  if (currentModeId !== null) requestDraw();
+}
+
+function getCellSize() { 
+  return parseFloat(canvas.style.width) / (GRID + 1); 
+}
+
+function dotPos(posArr) {
+  const cs = getCellSize();
+  return { x: (posArr[0] + 1) * cs, y: (posArr[1] + 1) * cs };
+}
+
+function requestDraw() {
+  if (!isDrawingFramePending) {
+    isDrawingFramePending = true;
+    requestAnimationFrame(() => {
+      drawGame();
+      isDrawingFramePending = false;
+    });
+  }
+}
+
+function drawGame() {
+  const w = parseFloat(canvas.style.width);
+  const h = parseFloat(canvas.style.height);
+  ctx.fillStyle = gameColors.bg;
+  ctx.fillRect(0,0,w,h);
+
+  const cs = getCellSize();
+
+  // Draw Grid Dots
+  ctx.fillStyle = 'rgba(148,163,184,0.3)';
+  const dotRadius = difficulty === 'sulit' ? 2 : 2.5; // Titik lebih kecil agar terlihat rapi di layar HP
+  for (let x = 0; x < GRID; x++) {
+    for (let y = 0; y < GRID; y++) {
+      const p = dotPos([x,y]);
+      ctx.beginPath(); ctx.arc(p.x, p.y, dotRadius, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
+  // Draw Ref Line
+  if (activeRefLine.length === 2) {
+    const a = dotPos(activeRefLine[0]), b = dotPos(activeRefLine[1]);
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 3.5;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+    
+    ctx.fillStyle = '#ef4444';
+    ctx.beginPath(); ctx.arc(a.x, a.y, 4, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI*2); ctx.fill();
+  }
+
+  // Draw User Line
+  if (activePoints.length === 2) {
+    const a = dotPos(activePoints[0].pos), b = dotPos(activePoints[1].pos);
+    ctx.strokeStyle = gameColors.accent;
+    ctx.lineWidth = 3.5;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  }
+
+  // Draw Movable Nodes
+  activePoints.forEach((pt, index) => {
+    const p = dotPos(pt.pos);
+    const isDragging = (draggedPointIndex === index);
+    
+    if (isDragging) {
+      ctx.fillStyle = pt.color + '40';
+      ctx.beginPath(); ctx.arc(p.x, p.y, 22, 0, Math.PI*2); ctx.fill(); // Halo effect
+    }
+
+    ctx.fillStyle = pt.color;
+    const mainRadius = isDragging ? 11 : (difficulty === 'sulit' ? 7 : 8);
+    ctx.beginPath(); ctx.arc(p.x, p.y, mainRadius, 0, Math.PI*2); ctx.fill();
+    
+    if (pt.label) {
+      ctx.fillStyle = '#fff';
+      ctx.font = '600 11px Fredoka';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(pt.label, p.x, p.y - 12);
+    }
+  });
+}
+
+// ===================== INTERACTION =====================
+function getGridPos(e) {
+  const rect = canvas.getBoundingClientRect();
+  // Tangkap event touch/mouse
+  const clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
+
+  const cx = clientX - rect.left;
+  const cy = clientY - rect.top; 
+  const cs = getCellSize();
+  
+  let gx = Math.round(cx/cs - 1);
+  let gy = Math.round(cy/cs - 1);
+  
+  gx = Math.max(0, Math.min(GRID - 1, gx));
+  gy = Math.max(0, Math.min(GRID - 1, gy));
+  
+  return [gx,gy];
+}
+
+function handlePointerDown(e) {
+  if (e.cancelable) e.preventDefault(); // Cegah pull-to-refresh
+  if (!domCache.successOverlay.classList.contains('hidden')) return;
+  
+  const rect = canvas.getBoundingClientRect();
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  
+  const cx = clientX - rect.left;
+  const cy = clientY - rect.top; 
+  const cs = getCellSize();
+  
+  let bestDist = Infinity;
+  let bestIdx = -1;
+
+  for (let i = 0; i < activePoints.length; i++) {
+    const p = dotPos(activePoints[i].pos);
+    const dist = Math.sqrt((cx-p.x)**2 + (cy-p.y)**2);
+    
+    // Hitbox super responsif untuk jari di layar HP
+    if (dist < cs * 1.5 && dist < bestDist) {
+      bestDist = dist;
+      bestIdx = i;
+    }
+  }
+
+  if (bestIdx !== -1) {
+    draggedPointIndex = bestIdx;
+    requestDraw();
+  }
+}
+
+function handlePointerMove(e) {
+  if (e.cancelable) e.preventDefault(); // Penting di HP agar layar tidak bergeser
+  if (draggedPointIndex === null) return;
+  
+  const pos = getGridPos(e);
+  if (pos) {
+    activePoints[draggedPointIndex].pos = [...pos];
+    requestDraw();
+  }
+}
+
+function handlePointerUp(e) {
+  if (e && e.cancelable) e.preventDefault();
+  if (draggedPointIndex !== null) {
+    draggedPointIndex = null;
+    requestDraw();
+    checkSolution();
+  }
+}
+
+// Bind Events (Mouse & Touch)
+canvas.addEventListener('mousedown', handlePointerDown);
+canvas.addEventListener('mousemove', handlePointerMove);
+canvas.addEventListener('mouseup', handlePointerUp);
+canvas.addEventListener('mouseleave', handlePointerUp);
+
+canvas.addEventListener('touchstart', handlePointerDown, { passive: false });
+canvas.addEventListener('touchmove', handlePointerMove, { passive: false });
+canvas.addEventListener('touchend', handlePointerUp, { passive: false });
+canvas.addEventListener('touchcancel', handlePointerUp, { passive: false });
+
+function checkSolution() {
+  const modeData = modes[currentModeId];
+  if (modeData.validate(activeRefLine, activePoints)) {
+    showSuccess();
+  }
+}
+
+// ===================== UI FUNCTIONS =====================
+function showScreen(name) {
+  ['screenTitle','screenGame'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+    document.getElementById(id).classList.remove('flex');
+  });
+  const target = document.getElementById('screen' + name.charAt(0).toUpperCase() + name.slice(1));
+  target.classList.remove('hidden');
+  target.classList.add('flex');
+
+  if (name === 'game' && currentModeId !== null) {
+    // Beri sedikit jeda agar DOM ter-render dulu sebelum canvas di-resize
+    setTimeout(resizeCanvas, 50);
+  }
+  if (window.lucide) lucide.createIcons();
+}
+
+function startMode(modeId) {
+  currentModeId = modeId;
+  const modeData = modes[modeId];
+  
+  domCache.levelLabel.textContent = `Mode ${modeData.title}`;
+  domCache.missionText.innerHTML = modeData.mission;
+  
+  generatePuzzle(modeId);
+  domCache.successOverlay.classList.add('hidden');
+  showScreen('game');
+}
+
+function toggleHint() {
+  showToast('💡 ' + modes[currentModeId].hint);
+}
+
+function showSuccess() {
+  domCache.successOverlay.classList.remove('hidden');
+  spawnConfetti();
+}
+
+function showToast(msg) {
+  const toast = document.createElement('div');
+  toast.className = 'toast-msg px-3 py-2.5 rounded-xl text-[11px] sm:text-xs font-medium text-center shadow-lg';
+  toast.style.background = 'rgba(30,41,59,0.95)';
+  toast.style.color = '#e2e8f0';
+  toast.style.border = '1px solid rgba(56,189,248,0.3)';
+  toast.style.backdropFilter = 'blur(8px)';
+  toast.textContent = msg;
+  
+  domCache.toastContainer.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+function spawnConfetti() {
+  const fragment = document.createDocumentFragment();
+  const colors = ['#38bdf8','#f472b6','#34d399','#fbbf24','#a78bfa','#ef4444'];
+  for (let i = 0; i < 30; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-particle';
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.left = (10 + Math.random()*80) + '%';
+    p.style.bottom = '50%';
+    p.style.animationDelay = (Math.random()*0.3) + 's';
+    
+    const angle = -45 + Math.random()*90;
+    const dist = 40 + Math.random()*80;
+    p.style.setProperty('--tx', Math.cos(angle*Math.PI/180)*dist + 'px');
+    p.style.setProperty('--ty', -Math.abs(Math.sin(angle*Math.PI/180)*dist) + 'px');
+    fragment.appendChild(p);
+  }
+  domCache.confettiLayer.innerHTML = '';
+  domCache.confettiLayer.appendChild(fragment);
+  setTimeout(() => { domCache.confettiLayer.innerHTML = ''; }, 1500);
+}
+
+// ===================== INIT =====================
+let resizeTimeout;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(resizeCanvas, 150);
+});
+
+setDifficulty('mudah');
+showScreen('title');
+</script>
+ </body>
+</html>
