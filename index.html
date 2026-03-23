@@ -196,18 +196,20 @@
       <div id="confettiLayer" class="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl z-50"></div>
      </div>
 
-     <div id="successOverlay" class="hidden absolute inset-0 z-40 flex items-center justify-center p-4" style="background: rgba(15,23,42,0.15);">
-      <div class="text-center px-5 py-5 mission-card w-full max-w-[280px] rounded-2xl shadow-2xl" style="background: rgba(30,41,59,0.7); border: 1px solid rgba(52,211,153,0.5);">
-       <div class="mb-4">
-        <div class="mx-auto mb-2 w-12 h-12 rounded-full flex items-center justify-center" style="background: rgba(52,211,153,0.2);">
-          <i data-lucide="check-circle-2" class="w-7 h-7 text-emerald-400"></i>
+     <div id="successOverlay" class="hidden absolute inset-0 z-40 flex items-center justify-center p-4" style="background: rgba(15,23,42,0.05);">
+      
+      <div class="text-center px-5 py-5 w-full max-w-[280px] rounded-2xl shadow-2xl" 
+           style="background: rgba(15,23,42,0.45); border: 1px solid rgba(52,211,153,0.7); backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px); animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);">
+       <div class="mb-5">
+        <div class="mx-auto mb-2 w-12 h-12 rounded-full flex items-center justify-center" style="background: rgba(52,211,153,0.3); border: 1px solid rgba(52,211,153,0.5);">
+          <i data-lucide="check-circle-2" class="w-7 h-7 text-emerald-300 drop-shadow-md"></i>
         </div>
-        <p class="text-lg font-bold text-white mb-1">Kerja Bagus! 🎉</p>
-        <p id="successSub" class="text-xs leading-relaxed" style="color:#cbd5e1;">Tantangan diselesaikan dengan sempurna.</p>
+        <p class="text-xl font-bold text-white mb-1 drop-shadow-md">Kerja Bagus! 🎉</p>
+        <p id="successSub" class="text-xs font-medium leading-relaxed drop-shadow-md" style="color:#e2e8f0;">Tantangan diselesaikan dengan sempurna.</p>
        </div>
-       <div class="flex flex-col gap-2 justify-center">
-        <button onclick="startMode(currentModeId)" class="btn-primary w-full py-2.5 rounded-xl font-bold text-sm text-white" style="background: linear-gradient(135deg, #38bdf8, #818cf8);"> Acak Tantangan Baru </button>
-        <button onclick="showScreen('title')" class="btn-primary w-full py-2.5 rounded-xl font-semibold text-xs" style="background: rgba(148,163,184,0.15); color: #e2e8f0;"> Kembali ke Menu </button> 
+       <div class="flex flex-col gap-2.5 justify-center">
+        <button onclick="startMode(currentModeId)" class="btn-primary w-full py-2.5 rounded-xl font-bold text-sm text-white shadow-lg" style="background: linear-gradient(135deg, rgba(56,189,248,0.9), rgba(129,140,248,0.9));"> Acak Tantangan Baru </button>
+        <button onclick="showScreen('title')" class="btn-primary w-full py-2.5 rounded-xl font-semibold text-xs shadow-lg" style="background: rgba(15,23,42,0.7); color: #e2e8f0; border: 1px solid rgba(255,255,255,0.15);"> Kembali ke Menu </button> 
        </div>
       </div>
      </div>
