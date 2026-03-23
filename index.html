@@ -29,11 +29,13 @@
     }
 
     .mission-card {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       animation: slideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     @keyframes slideUp {
-      from { opacity: 0; transform: translateY(30px); }
+      from { opacity: 0; transform: translateY(15px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
@@ -171,8 +173,8 @@
     </div>
    </div>
    
-   <div id="screenGame" class="flex-1 w-full hidden flex-col relative" style="background: #0f172a;">
-    <header class="flex items-center gap-2 px-3 py-2.5 shrink-0" style="background: rgba(15,23,42,0.95); border-bottom: 1px solid rgba(56,189,248,0.15); z-index: 10;">
+   <div id="screenGame" class="flex-1 w-full hidden flex-col" style="background: #0f172a;">
+    <header class="flex items-center gap-2 px-3 py-2.5 shrink-0" style="background: rgba(15,23,42,0.95); border-bottom: 1px solid rgba(56,189,248,0.15);">
      <button onclick="showScreen('title')" class="p-1.5 rounded-lg hover:bg-white/10 active:bg-white/20 transition" style="color:#94a3b8;"> <i data-lucide="arrow-left" style="width:20px;height:20px;"></i> </button> 
      <span id="levelLabel" class="text-xs sm:text-sm font-bold uppercase tracking-wider" style="color:#38bdf8;">Mode Sejajar</span>
      <div class="ml-auto flex items-center gap-1.5">
@@ -182,31 +184,31 @@
      </div>
     </header>
     
-    <div class="px-3 py-2 shrink-0 relative z-10">
-     <div class="mission-card rounded-xl p-2.5 shadow-sm" style="background: rgba(30,41,59,0.85); border: 1px solid rgba(56,189,248,0.2); backdrop-filter: blur(8px);">
+    <div class="px-3 py-2 shrink-0">
+     <div class="mission-card rounded-xl p-2.5 shadow-sm" style="background: rgba(30,41,59,0.85); border: 1px solid rgba(56,189,248,0.2);">
       <p id="missionText" class="text-xs sm:text-sm text-white font-medium leading-relaxed"></p>
      </div>
     </div>
     
-    <div class="flex-1 flex items-center justify-center px-3 pb-3 min-h-0 w-full relative z-0">
+    <div class="flex-1 flex items-center justify-center px-3 pb-3 min-h-0 w-full relative">
      <div id="canvasWrapper" class="relative w-full h-full max-w-[450px] max-h-[450px] flex items-center justify-center">
       <canvas id="gameCanvas" class="w-full rounded-2xl shadow-lg" style="background: #1e293b; border: 1px solid rgba(56,189,248,0.15);"></canvas>
-      <div id="confettiLayer" class="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl z-20"></div>
+      <div id="confettiLayer" class="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl z-50"></div>
      </div>
-    </div>
-    
-    <div id="successOverlay" class="hidden absolute inset-0 z-40 flex flex-col justify-end items-center p-4 pb-6 sm:pb-8 pointer-events-auto" style="background: linear-gradient(180deg, transparent 0%, rgba(15,23,42,0.4) 60%, rgba(15,23,42,0.95) 100%);">
-     <div class="text-center px-4 py-5 mission-card w-full max-w-[320px] rounded-2xl shadow-2xl" style="background: rgba(30,41,59,0.95); border: 1px solid rgba(52,211,153,0.5); backdrop-filter: blur(12px);">
-      <div class="mb-4">
-       <div class="mx-auto mb-2 w-12 h-12 rounded-full flex items-center justify-center" style="background: rgba(52,211,153,0.2);">
-         <i data-lucide="check-circle-2" class="w-7 h-7 text-emerald-400"></i>
+
+     <div id="successOverlay" class="hidden absolute inset-0 z-40 flex items-center justify-center p-4" style="background: rgba(15,23,42,0.15);">
+      <div class="text-center px-5 py-5 mission-card w-full max-w-[280px] rounded-2xl shadow-2xl" style="background: rgba(30,41,59,0.7); border: 1px solid rgba(52,211,153,0.5);">
+       <div class="mb-4">
+        <div class="mx-auto mb-2 w-12 h-12 rounded-full flex items-center justify-center" style="background: rgba(52,211,153,0.2);">
+          <i data-lucide="check-circle-2" class="w-7 h-7 text-emerald-400"></i>
+        </div>
+        <p class="text-lg font-bold text-white mb-1">Kerja Bagus! 🎉</p>
+        <p id="successSub" class="text-xs leading-relaxed" style="color:#cbd5e1;">Tantangan diselesaikan dengan sempurna.</p>
        </div>
-       <p class="text-lg font-bold text-white mb-1">Kerja Bagus! 🎉</p>
-       <p id="successSub" class="text-[11px] sm:text-xs leading-relaxed" style="color:#94a3b8;">Tantangan diselesaikan dengan sempurna.</p>
-      </div>
-      <div class="flex gap-2 justify-center">
-       <button onclick="showScreen('title')" class="btn-primary flex-1 py-2.5 rounded-xl font-semibold text-xs" style="background: rgba(148,163,184,0.15); color: #e2e8f0;"> Menu Utama </button> 
-       <button onclick="startMode(currentModeId)" class="btn-primary flex-[1.5] py-2.5 rounded-xl font-bold text-xs text-white" style="background: linear-gradient(135deg, #38bdf8, #818cf8);"> Lanjut Acak ✨ </button>
+       <div class="flex flex-col gap-2 justify-center">
+        <button onclick="startMode(currentModeId)" class="btn-primary w-full py-2.5 rounded-xl font-bold text-sm text-white" style="background: linear-gradient(135deg, #38bdf8, #818cf8);"> Acak Tantangan Baru </button>
+        <button onclick="showScreen('title')" class="btn-primary w-full py-2.5 rounded-xl font-semibold text-xs" style="background: rgba(148,163,184,0.15); color: #e2e8f0;"> Kembali ke Menu </button> 
+       </div>
       </div>
      </div>
     </div>
@@ -547,7 +549,6 @@ function handlePointerUp(e) {
   }
 }
 
-// Bind Events (Mouse & Touch)
 canvas.addEventListener('mousedown', handlePointerDown);
 canvas.addEventListener('mousemove', handlePointerMove);
 canvas.addEventListener('mouseup', handlePointerUp);
